@@ -103,7 +103,7 @@ def main():
     # text_embending_layer()
     # preprocessed = preprocess_text_material(training_examples[0])
     # process_text_material_through(training_examples[0])
-
+    # https://databasecamp.de/en/ml/integrated-gradients-nlp
 
 if __name__ == '__main__':
     main()
