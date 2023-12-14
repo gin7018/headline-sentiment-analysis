@@ -1,14 +1,12 @@
 import torch
-from transformers import BertForSequenceClassification
+import transformers
 
 
 class SentimentAnalysisModel(torch.nn.Module):
 
     def __init__(self):
         super(SentimentAnalysisModel, self).__init__()
-        self.bert = (BertForSequenceClassification.from_pretrained(
-            pretrained_model_name_or_path="bert-base-uncased"
-        ))
+        self.bert = transformers.DistilBertModel.from_pretrained('distilbert-base-uncased')
         self.dropout = torch.nn.Dropout(p=0.3)
         self.output = torch.nn.Linear(in_features=768, out_features=3)  # we have three possible classes
 
