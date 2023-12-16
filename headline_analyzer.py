@@ -1,16 +1,12 @@
 import torch
-from transformers import BertTokenizerFast
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 import news_material_provider
-from SentimentAnalysisModel import SentimentAnalysisModel
 
-headline_analyzer = SentimentAnalysisModel()
-headline_analyzer.eval()
+tokenizer = AutoTokenizer.from_pretrained("nlptown/bert-base-multilingual-uncased-sentiment")
+model = AutoModelForSequenceClassification.from_pretrained("nlptown/bert-base-multilingual-uncased-sentiment")
 
-tokenizer = (BertTokenizerFast.from_pretrained(
-    pretrained_model_name_or_path="bert-base-uncased",
-    use_fast=True
-))
+model.eval()
 
 sentiment_labels = {
     0: "negative",
@@ -26,27 +22,32 @@ def get_sentiment(headline):
                                    padding='max_length',
                                    return_tensors="pt",
                                    truncation=True)
-    with torch.no_grad():
-        output = headline_analyzer(
-            tokenized_headline["input_ids"],
-            attention_mask=tokenized_headline["attention_mask"]
-        )
-        predicted_sentiment = torch.argmax(output, dim=1).tolist()
+    output = model(
+        tokenized_headline["input_ids"],
+        attention_mask=tokenized_headline["attention_mask"]
+    )
+    predicted_sentiment = torch.argmax(output.logits, dim=1).tolist()[0]
 
-        return sentiment_labels[predicted_sentiment[0]]
+    if predicted_sentiment > 2: predicted_sentiment = 2
+    return sentiment_labels[predicted_sentiment]
 
 
 def gather_overall_topic_sentiment(query, time_span):
     headlines = news_material_provider.get_news_material(query, time_span)[:3]
-    # headlines = ["life is so good!", "stock market crash oh no", "nothing much"]
-    all_sentiments = []  # TODO
-    for headline in headlines:
-        sent = get_sentiment(headline)
-        print(f"title: {headline[:40]}, sentiment: {sent}")
 
-    # TODO consolidate sentiment to get overall sentiment
-    return None
+    all_sentiments = []
+    for headline in headlines:
+        all_sentiments.append(get_sentiment(headline))
+        print(f"title: {headline[:40]}, sentiment: {get_sentiment(headline)}")
+
+    positives = all_sentiments.count("positive")
+    negatives = all_sentiments.count("negative")
+    neutrals = all_sentiments.count("neutral")
+
+    overall_sentiment = torch.argmax(torch.tensor([negatives, neutrals, positives]), -1).item()
+    return sentiment_labels[overall_sentiment]
 
 
 if __name__ == '__main__':
-    gather_overall_topic_sentiment("tesla", "last week")
+    sent = gather_overall_topic_sentiment("tesla", "last week")
+    print(f"overall sentiment: {sent}")
