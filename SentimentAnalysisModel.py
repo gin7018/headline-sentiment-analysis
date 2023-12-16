@@ -4,10 +4,10 @@ import transformers
 
 class SentimentAnalysisModel(transformers.PreTrainedModel):
 
-    def __init__(self):
-        config = transformers.DistilBertConfig.from_pretrained('distilbert-base-uncased')
+    def __init__(self, pretrained_model="ghislainehaha/headline-sentiment-analyzer"):
+        config = transformers.DistilBertConfig.from_pretrained(pretrained_model)
         super(SentimentAnalysisModel, self).__init__(config=config)
-        self.bert = transformers.DistilBertModel.from_pretrained('distilbert-base-uncased')
+        self.bert = transformers.DistilBertModel.from_pretrained(pretrained_model)
         self.dropout = torch.nn.Dropout(p=0.3)
         self.output = torch.nn.Linear(in_features=768, out_features=3)  # we have three possible classes
 
