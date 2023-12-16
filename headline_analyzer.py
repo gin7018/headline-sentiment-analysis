@@ -38,7 +38,7 @@ def gather_overall_topic_sentiment(query, time_span):
     all_sentiments = []
     for headline in headlines:
         all_sentiments.append(get_sentiment(headline))
-        print(f"title: {headline[:40]}, sentiment: {get_sentiment(headline)}")
+        print(f"title: {headline}, sentiment: {get_sentiment(headline)}")
 
     positives = all_sentiments.count("positive")
     negatives = all_sentiments.count("negative")
